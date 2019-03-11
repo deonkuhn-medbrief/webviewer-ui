@@ -74,5 +74,14 @@
       background: var(--text-color);
       opacity: 0.5;
     }
+
+    .mbVisibility .StatefulButton {
+      width: 17px;
+      height: 17px;
+        .Icon {
+          width: 15px;
+          height: 15px;
+        }
+    }
   }
 }

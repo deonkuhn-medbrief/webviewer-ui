@@ -13,6 +13,8 @@ import selectors from 'selectors';
 
 import './NoteRoot.scss';
 
+import MbAnnotationVisibilityButton from 'components/MbAnnotationVisibilityButton';
+
 class NoteRoot extends React.Component {
   static propTypes = {
     annotation: PropTypes.object.isRequired,
@@ -27,7 +29,8 @@ class NoteRoot extends React.Component {
     numberOfReplies: PropTypes.number.isRequired,
     noteDateFormat: PropTypes.string,
     iconColor: PropTypes.oneOf(['TextColor', 'StrokeColor', 'FillColor']),
-    contents: PropTypes.string
+    contents: PropTypes.string,
+    isMbVisibilityDisabled: PropTypes.bool
   }
 
   componentDidMount() {
@@ -52,7 +55,7 @@ class NoteRoot extends React.Component {
     const { annotation, isNoteExpanded, sortStrategy, openEditing, renderAuthorName, numberOfReplies, noteDateFormat, iconColor } = this.props;
     const color = iconColor && annotation[iconColor].toHexString();
     const icon = getDataWithKey(mapAnnotationToKey(annotation)).icon;
-
+    
     return (
       <div className="title">
         <div className="type">
@@ -73,6 +76,7 @@ class NoteRoot extends React.Component {
             ` (${numberOfReplies})`
           }
         </div>
+        <MbAnnotationVisibilityButton annotation={annotation} />
         <NotePopup 
           annotation={annotation} 
           isNoteExpanded={isNoteExpanded} 

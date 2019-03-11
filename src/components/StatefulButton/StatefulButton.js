@@ -65,6 +65,8 @@ class StatefulButton extends React.PureComponent {
     const { title, img, getContent } = this.props.states[activeState];
     const content = getContent ? getContent(this.props.states[activeState]) : '';
 
+    console.log('render stateful button', this.props.states[activeState]);
+
     return (
       <Tooltip content={title} isDisabled={this.props.isDisabled}>
         <Button {...this.props} img={img} label={content} onClick={this.onClick} />
