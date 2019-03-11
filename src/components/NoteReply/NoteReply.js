@@ -11,6 +11,8 @@ import selectors from 'selectors';
 import './NoteReply.scss';
 import connect from 'react-redux/es/connect/connect';
 
+import MbAnnotationVisibilityButton from 'components/MbAnnotationVisibilityButton';
+
 class NoteReply extends React.PureComponent {
   static propTypes = {
     reply: PropTypes.object.isRequired,
@@ -50,6 +52,7 @@ class NoteReply extends React.PureComponent {
         <span className="time">
           {' ' + dayjs(reply.DateCreated).format(noteDateFormat)}
         </span>
+        <MbAnnotationVisibilityButton annotation={reply}/>
         <NotePopup 
           annotation={reply} 
           isNoteExpanded 

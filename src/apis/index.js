@@ -71,6 +71,8 @@ import updateOutlines from './updateOutlines';
 import print from './print';
 import enableLocalStorage from './enableLocalStorage';
 import disableLocalStorage from './disableLocalStorage';
+import disableMbVisibility from './disableMbVisibility';
+import enableMbVisibility from './enableMbVisibility';
 
 export default {
   loadDocument,
@@ -148,5 +150,7 @@ export default {
   setMaxZoomLevel,
   setMinZoomLevel,
   enableLocalStorage,
-  disableLocalStorage
+  disableLocalStorage,
+  disableMbVisibility,
+  enableMbVisibility
 };
