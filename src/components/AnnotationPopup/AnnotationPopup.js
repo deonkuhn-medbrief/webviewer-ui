@@ -187,7 +187,7 @@ class AnnotationPopup extends React.PureComponent {
             {canModify &&
               <ActionButton dataElement="annotationDeleteButton" title="action.delete" img="ic_delete_black_24px" onClick={this.deleteAnnotation} />
             }
-          <MbAnnotationVisibilityButton dataElement="annotationPopupMbVisibilityButton" annotation={this.state.annotation} />
+          <MbAnnotationVisibilityButton annotation={this.state.annotation} />
           </React.Fragment>
         }
       </div>
