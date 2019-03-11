@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import core from 'core';
 
 import StatefulButton from 'components/StatefulButton';
 
@@ -10,25 +9,12 @@ import FireEvent from 'helpers/fireEvent';
 
 class MbAnnotationVisibilityButton extends React.PureComponent {
   static propTypes = {
-    isMbVisibilityDisabled: PropTypes.bool,
+    isDisabled: PropTypes.bool,
     annotation: PropTypes.object.isRequired
-  }
-
-  constructor() {
-    super();
   }
 
   getAnnotationVisibilityMount = () => {
       const { annotation } = this.props;
-
-      if (this.state) {
-        const { update } = this.state;
-        if (annotation.mbVisibility == 'public') {
-          update('StatePublic');
-        } else {
-          update('StatePrivate');
-        }
-      }
 
       return (update) => {
         this.setState({
@@ -44,11 +30,24 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
   }
 
   componentDidMount() {
-    window.addEventListener('annotationVisibilityChanged', this.onAnnotationVisibilityChanged);
+    window.addEventListener('annotationVisibilityChanged', this.onAnnotationVisibilityChanged);  
   }
 
   componentWillUnmount() {
     window.removeEventListener('annotationVisibilityChanged', this.onAnnotationVisibilityChanged);
+  }
+
+  componentDidUpdate() {
+    const { annotation } = this.props; 
+
+    if (this.state) {
+      const { update } = this.state;
+      if (annotation.mbVisibility == 'public') {
+        update('StatePublic');
+      } else {
+        update('StatePrivate');
+      }
+    }  
   }
 
   onAnnotationVisibilityChanged = e => {
@@ -56,7 +55,6 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
     const {update} = this.state;
     
     if (e.detail.activeState.annotation.Id == annotation.Id) {
-      // annotation.mbVisibility = e.detail.activeState.annotation.mbVisibility;
       if (annotation.mbVisibility == 'public') {
         update('StatePublic');
       } else {
@@ -71,18 +69,16 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
     return {
       StatePrivate: {
           onClick: (update, activeState) => {
-            console.log('StatePrivate', annotation.mbVisibility, annotation.Id);
               annotation.mbVisibility = 'public';
               update('StatePublic');
               FireEvent('annotationVisibilityChanged', {'activeState': activeState});
             },
             title: 'Visible to My Firm only',
-            img: 'mb_single_user',
+            img: 'mb_padlock',
             annotation: annotation
           },
           StatePublic: {
             onClick: (update, activeState) => {
-              console.log('StatePublic', annotation.mbVisibility, annotation.Id);
               annotation.mbVisibility = 'private';
               FireEvent('annotationVisibilityChanged', {'activeState': activeState});
               update('StatePrivate');
@@ -95,15 +91,15 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
   }
 
   render() {
-    const { isMbVisibilityDisabled, annotation } = this.props;
+    const { isDisabled } = this.props;
     
-    console.log('render', annotation.mbVisibility, annotation.Id);
+    if (isDisabled) {
+      return null;
+    }
 
     return (
       <div className="mbVisibility">
-      {!isMbVisibilityDisabled &&
         <StatefulButton dataElement="mbAnnotationVisibilityButton" mount={this.getAnnotationVisibilityMount()} states={this.getAnnotationVisibilityStates()} />
-      }
       </div>
     );
   }
@@ -111,8 +107,7 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
 
 const mapStateToProps = (state, ownProps) => ({
   className: 'MbAnnotationVisibilityButton',
-  // isDisabled: selectors.isElementDisabled(state, ownProps.dataElement),
-  isMbVisibilityDisabled: selectors.isElementDisabled(state, 'mbAnnotationVisibilityButton')
+  isDisabled: selectors.isElementDisabled(state, ownProps.dataElement)
 });
 
 export default connect(mapStateToProps)(MbAnnotationVisibilityButton);

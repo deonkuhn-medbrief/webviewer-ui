@@ -29,8 +29,7 @@ class NoteRoot extends React.Component {
     numberOfReplies: PropTypes.number.isRequired,
     noteDateFormat: PropTypes.string,
     iconColor: PropTypes.oneOf(['TextColor', 'StrokeColor', 'FillColor']),
-    contents: PropTypes.string,
-    isMbVisibilityDisabled: PropTypes.bool
+    contents: PropTypes.string
   }
 
   componentDidMount() {

@@ -72,6 +72,7 @@ import print from './print';
 import enableLocalStorage from './enableLocalStorage';
 import disableLocalStorage from './disableLocalStorage';
 import disableMbVisibility from './disableMbVisibility';
+import enableMbVisibility from './enableMbVisibility';
 
 export default {
   loadDocument,
@@ -150,5 +151,6 @@ export default {
   setMinZoomLevel,
   enableLocalStorage,
   disableLocalStorage,
-  disableMbVisibility
+  disableMbVisibility,
+  enableMbVisibility
 };

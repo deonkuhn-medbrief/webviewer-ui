@@ -209,6 +209,7 @@ if (window.CanvasRenderingContext2D) {
           unregisterTool: apis.unregisterTool(store),
           updateOutlines: apis.updateOutlines(store),
           disableMbVisibility: apis.disableMbVisibility(store),
+          enableMbVisibility: apis.enableMbVisibility(store),
           loadedFromServer: false,
           serverFailed: false,
         };
