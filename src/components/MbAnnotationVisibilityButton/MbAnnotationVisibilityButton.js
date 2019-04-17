@@ -83,7 +83,7 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
               FireEvent('annotationVisibilityChanged', {'activeState': activeState});
               update('StatePrivate');
           },
-          title: 'Visible to All',
+          title: 'Visible to Everyone',
           img: 'mb_multiple_user',
           annotation: annotation
       }
