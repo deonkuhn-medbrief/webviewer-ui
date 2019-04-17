@@ -67,25 +67,25 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
     const { annotation } = this.props;
 
     return {
-      StatePrivate: {
+        StatePrivate: {
           onClick: (update, activeState) => {
-              annotation.mbVisibility = 'public';
-              update('StatePublic');
-              FireEvent('annotationVisibilityChanged', {'activeState': activeState});
-            },
-            title: 'Visible to My Firm only',
-            img: 'mb_padlock',
-            annotation: annotation
+            annotation.mbVisibility = 'public';
+            update('StatePublic');
+            FireEvent('annotationVisibilityChanged', {'activeState': activeState});
           },
-          StatePublic: {
-            onClick: (update, activeState) => {
-              annotation.mbVisibility = 'private';
-              FireEvent('annotationVisibilityChanged', {'activeState': activeState});
-              update('StatePrivate');
-          },
-          title: 'Visible to Everyone',
-          img: 'mb_multiple_user',
+          title: 'Visible to My Firm only',
+          img: 'mb_padlock',
           annotation: annotation
+        },
+        StatePublic: {
+          onClick: (update, activeState) => {
+            annotation.mbVisibility = 'private';
+            FireEvent('annotationVisibilityChanged', {'activeState': activeState});
+            update('StatePrivate');
+        },
+        title: 'Visible to Everyone',
+        img: 'mb_multiple_user',
+        annotation: annotation
       }
     }
   }
@@ -99,7 +99,7 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
 
     return (
       <div className="mbVisibility">
-        <StatefulButton dataElement="mbAnnotationVisibilityButton" mount={this.getAnnotationVisibilityMount()} states={this.getAnnotationVisibilityStates()} />
+        <StatefulButton dataElement="mbAnnotationVisibilityButton" initialState="StatePrivate" mount={this.getAnnotationVisibilityMount()} states={this.getAnnotationVisibilityStates()} />
       </div>
     );
   }
