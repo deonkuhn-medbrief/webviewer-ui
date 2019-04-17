@@ -56,6 +56,7 @@ class NotesPanel extends React.PureComponent {
 
   onDocumentUnloaded = () => {
     this.visibleNoteIds.clear();
+    this.rootAnnotations = [];
     this.setState({ notesToRender: [] });
   }
 
@@ -197,7 +198,13 @@ class NotesPanel extends React.PureComponent {
     }
 
     return (
-      <div className="Panel NotesPanel" style={{ display }} data-element="notesPanel" onClick={() => core.deselectAllAnnotations()}>
+      <div
+        className="Panel NotesPanel"
+        style={{ display }}
+        data-element="notesPanel"
+        onClick={core.deselectAllAnnotations}
+        onScroll={e => e.stopPropagation()}
+      >
         {this.rootAnnotations.length === 0 
         ? <div className="no-annotations">{t('message.noAnnotations')}</div>
         : <React.Fragment>
@@ -221,6 +228,7 @@ const mapStatesToProps = state => ({
   sortStrategy: selectors.getSortStrategy(state),
   isDisabled: selectors.isElementDisabled(state, 'notesPanel'),
   pageLabels: selectors.getPageLabels(state),
+  pageRotation: selectors.getRotation(state),
   customNoteFilter: selectors.getCustomNoteFilter(state)
 });
 

@@ -1,7 +1,7 @@
 import getFilteredDataElements from 'helpers/getFilteredDataElements';
 import { isIOS, isAndroid } from 'helpers/device';
 import selectors from 'selectors';
-
+import core from 'core';
 
 // viewer
 export const disableElement = (dataElement, priority) => (dispatch, getState) => {
@@ -29,7 +29,12 @@ export const enableElement = (dataElement, priority) => (dispatch, getState) => 
   }
 };
 export const enableElements = (dataElements, priority) => (dispatch, getState) => {
-  const filteredDataElements = getFilteredDataElements(getState(), dataElements, priority);
+  let filteredDataElements = getFilteredDataElements(getState(), dataElements, priority);
+
+  if (!core.isCreateRedactionEnabled()) {
+    filteredDataElements = filteredDataElements.filter(ele => ele !== 'redactionButton');
+  }
+
   dispatch({ type: 'ENABLE_ELEMENTS', payload: { dataElements: filteredDataElements, priority } });
 };
 export const setActiveToolNameAndStyle = toolObject => (dispatch, getState) => {
@@ -54,6 +59,7 @@ export const setActiveToolGroup = toolGroup => ({ type: 'SET_ACTIVE_TOOL_GROUP',
 export const setNotePopupId = id => ({ type: 'SET_NOTE_POPUP_ID', payload: { id } });
 export const setFitMode = fitMode => ({ type: 'SET_FIT_MODE', payload: { fitMode } });
 export const setZoom = zoom => ({ type: 'SET_ZOOM', payload: { zoom } });
+export const setRotation = rotation => ({ type: 'SET_ROTATION', payload: { rotation } });
 export const setDisplayMode = displayMode => ({ type: 'SET_DISPLAY_MODE', payload: { displayMode } });
 export const setCurrentPage = currentPage => ({ type: 'SET_CURRENT_PAGE', payload: { currentPage } });
 export const setFullScreen = isFullScreen => ({ type: 'SET_FULL_SCREEN', payload: { isFullScreen } });

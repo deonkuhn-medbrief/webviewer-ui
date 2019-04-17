@@ -18,6 +18,8 @@ import enableTextSelection from './enableTextSelection';
 import disableTextSelection from './disableTextSelection';
 import enableFilePicker from './enableFilePicker';
 import disableFilePicker from './disableFilePicker';
+import enableMeasurement from './enableMeasurement';
+import disableMeasurement from './disableMeasurement';
 import enableNotesPanel from './enableNotesPanel';
 import disableNotesPanel from './disableNotesPanel';
 import enableAnnotations from './enableAnnotations';
@@ -68,7 +70,12 @@ import isToolDisabled from './isToolDisabled';
 import setNotesPanelSort from './setNotesPanelSort';
 import addSortStrategy from './addSortStrategy';
 import updateOutlines from './updateOutlines';
+import updateTool from './updateTool';
 import print from './print';
+import showWarningMessage from './showWarningMessage';
+import showErrorMessage from './showErrorMessage';
+import enableRedaction from './enableRedaction';
+import disableRedaction from './disableRedaction';
 import enableLocalStorage from './enableLocalStorage';
 import disableLocalStorage from './disableLocalStorage';
 import disableMbVisibility from './disableMbVisibility';
@@ -94,6 +101,8 @@ export default {
   disableTextSelection,
   enableFilePicker,
   disableFilePicker,
+  enableMeasurement,
+  disableMeasurement,
   enableNotesPanel,
   disableNotesPanel,
   enableAnnotations,
@@ -144,11 +153,16 @@ export default {
   setNotesPanelSort,
   addSortStrategy,
   updateOutlines,
+  updateTool,
   print, 
   getZoomLevel,
   setZoomLevel,
   setMaxZoomLevel,
   setMinZoomLevel,
+  showWarningMessage,
+  showErrorMessage,
+  enableRedaction,
+  disableRedaction,
   enableLocalStorage,
   disableLocalStorage,
   disableMbVisibility,

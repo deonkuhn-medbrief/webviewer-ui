@@ -37,7 +37,7 @@ export default initialState => (state = initialState, action) => {
     case 'SET_ACTIVE_TOOL_NAME':
       return { ...state, activeToolName: payload.toolName };
     case 'SET_ACTIVE_TOOL_STYLES':
-      return { ...state, activeToolStyles: payload.toolStyles };
+      return { ...state, activeToolStyles: { ...payload.toolStyles }};
     case 'SET_ACTIVE_TOOL_NAME_AND_STYLES':
       return { ...state, activeToolName: payload.toolName, activeToolStyles: payload.toolStyles };
     case 'SET_ACTIVE_LEFT_PANEL':
@@ -66,6 +66,8 @@ export default initialState => (state = initialState, action) => {
       return { ...state, fitMode: payload.fitMode };
     case 'SET_ZOOM':
       return { ...state, zoom: payload.zoom };
+    case 'SET_ROTATION':
+      return { ...state, rotation: payload.rotation };
     case 'SET_DISPLAY_MODE':
       return { ...state, displayMode: payload.displayMode };
     case 'SET_CURRENT_PAGE':
@@ -136,10 +138,22 @@ export default initialState => (state = initialState, action) => {
     }
     case 'SET_COLOR_MAP': 
       return { ...state, colorMap: payload.colorMap };
+    case 'SET_CURSOR_OVERLAY': {
+      const { imgSrc, width, height } = payload.data;
+
+      return { 
+        ...state, 
+        cursorOverlay: { imgSrc, width, height } 
+      };
+    }
     case 'SET_SWIPE_ORIENTATION':
       return { ...state, swipeOrientation: payload.swipeOrientation };
+    case 'SET_WARNING_MESSAGE':
+      return { ...state, warning: payload};
     case 'SET_CUSTOM_NOTE_FILTER':
       return { ...state, customNoteFilter: payload.customNoteFilter };
+    case 'SET_ZOOM_LIST':
+      return { ...state, zoomList: payload.zoomList };
     default:
       return state;
   }

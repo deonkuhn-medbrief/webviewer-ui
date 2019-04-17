@@ -33,11 +33,10 @@ class DocumentContainer extends React.PureComponent {
     swipeOrientation: PropTypes.string
   }
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.document = React.createRef();
     this.container = React.createRef();
-    this.touchEventManager = Object.create(TouchEventManager);
     this.wheelToNavigatePages = _.throttle(this.wheelToNavigatePages.bind(this), 300, { trailing: false });
     this.wheelToZoom = _.throttle(this.wheelToZoom.bind(this), 30, { trailing: false });
   }
@@ -47,12 +46,12 @@ class DocumentContainer extends React.PureComponent {
       updateContainerWidth(prevProps, this.props, this.container.current);
     }
     if (prevProps.swipeOrientation !== this.props.swipeOrientation){
-      this.touchEventManager.updateOrientation(this.props.swipeOrientation);
+      TouchEventManager.updateOrientation(this.props.swipeOrientation);
     }
   }
 
   componentDidMount() {
-    this.touchEventManager.initialize(this.document.current, this.container.current);
+    TouchEventManager.initialize(this.document.current, this.container.current);
     core.setScrollViewElement(this.container.current);
     core.setViewerElement(this.document.current);
 
@@ -64,13 +63,17 @@ class DocumentContainer extends React.PureComponent {
     if (isIE) {
       window.addEventListener('resize', this.handleWindowResize);
     }
+
+    this.container.current.addEventListener('wheel', this.onWheel, { passive: false });
   }
 
   componentWillUnmount() {
-    this.touchEventManager.terminate();
+    TouchEventManager.terminate();
     if (isIE) {
       window.removeEventListener('resize', this.handleWindowResize);
     }
+
+    this.container.current.removeEventListener('wheel', this.onWheel, { passive: false });
   }
 
   handleWindowResize = () => {
@@ -159,7 +162,7 @@ class DocumentContainer extends React.PureComponent {
     }
 
     return(
-      <div className={className} ref={this.container} data-element="documentContainer" onWheel={this.onWheel} onTransitionEnd={this.onTransitionEnd}>
+      <div className={className} ref={this.container} data-element="documentContainer" onTransitionEnd={this.onTransitionEnd}>
         <div className="document" ref={this.document}></div>
       </div>
     );
