@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { translate } from 'react-i18next';
+import { withTranslation } from 'react-i18next';
+import onClickOutside from 'react-onclickoutside';
 
 import ActionButton from 'components/ActionButton';
 
@@ -12,7 +13,7 @@ import openFilePicker from 'helpers/openFilePicker';
 import toggleFullscreen from 'helpers/toggleFullscreen';
 import downloadPdf from 'helpers/downloadPdf';
 import { isIOS } from 'helpers/device';
-import { documentTypes } from 'constants/types';
+import { workerTypes } from 'constants/types';
 import actions from 'actions';
 import selectors from 'selectors';
 
@@ -29,7 +30,7 @@ class MenuOverlay extends React.PureComponent {
     isOpen: PropTypes.bool,
     closeElements: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
-    t: PropTypes.func.isRequired
+    t: PropTypes.func.isRequired,
   }
 
   constructor() {
@@ -37,7 +38,7 @@ class MenuOverlay extends React.PureComponent {
     this.overlay = React.createRef();
     this.state = {
       left: 0,
-      right: 'auto'
+      right: 'auto',
     };
   }
 
@@ -54,12 +55,20 @@ class MenuOverlay extends React.PureComponent {
     print(dispatch, isEmbedPrintSupported);
   }
 
+  handleClickOutside = e => {
+    const clickedMenuButton = e.target.getAttribute('data-element') === 'menuButton';
+
+    if (!clickedMenuButton) {
+      this.props.closeElements(['menuOverlay']);
+    }
+  }
+
   downloadDocument = () => {
     const { dispatch, documentPath, documentFilename } = this.props;
 
     downloadPdf(dispatch, {
       documentPath,
-      filename: documentFilename
+      filename: documentFilename,
     });
   }
 
@@ -91,7 +100,7 @@ class MenuOverlay extends React.PureComponent {
 const mapStateToProps = state => ({
   documentPath: selectors.getDocumentPath(state),
   documentFilename: state.document.filename,
-  isDownloadable: selectors.getDocumentType(state) !== documentTypes.XOD,
+  isDownloadable: selectors.getDocumentType(state) !== workerTypes.XOD,
   isEmbedPrintSupported: selectors.isEmbedPrintSupported(state),
   isFullScreen: selectors.isFullScreen(state),
   isDisabled: selectors.isElementDisabled(state, 'menuOverlay'),
@@ -100,7 +109,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   dispatch,
-  closeElements: dataElements => dispatch(actions.closeElements(dataElements))
+  closeElements: dataElements => dispatch(actions.closeElements(dataElements)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(translate()(MenuOverlay));
+export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(onClickOutside(MenuOverlay)));

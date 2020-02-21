@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { translate } from 'react-i18next';
+import { withTranslation } from 'react-i18next';
 
 import Tooltip from 'components/Tooltip';
 
@@ -22,7 +22,7 @@ class ColorPaletteHeader extends React.PureComponent {
 
   setColorPalette = newPalette => {
     const { setColorPalette, colorMapKey } = this.props;
-    
+
     setColorPalette(colorMapKey, newPalette);
   }
 
@@ -30,7 +30,7 @@ class ColorPaletteHeader extends React.PureComponent {
     const { style: { TextColor }, colorPalette } = this.props;
 
     return (
-      <Tooltip content="option.annotationColor.text">
+      <Tooltip content="option.annotationColor.TextColor">
         <div
           className={colorPalette === 'TextColor' ? 'text selected' : 'text'}
           style={{ color: TextColor.toHexString() }}
@@ -63,7 +63,7 @@ class ColorPaletteHeader extends React.PureComponent {
     };
 
     return (
-      <Tooltip content="option.annotationColor.border">
+      <Tooltip content="option.annotationColor.StrokeColor">
         <div
           className={colorPalette === 'StrokeColor' ? 'border selected' : 'border'}
           onClick={() => this.setColorPalette('StrokeColor')}
@@ -84,7 +84,7 @@ class ColorPaletteHeader extends React.PureComponent {
     const isTransparency = FillColor.toHexString() === null;
 
     return (
-      <Tooltip content="option.annotationColor.fill">
+      <Tooltip content="option.annotationColor.FillColor">
         <div
           className={colorPalette === 'FillColor' ? 'fill selected' : 'fill'}
           onClick={() => this.setColorPalette('FillColor')}
@@ -134,7 +134,7 @@ class ColorPaletteHeader extends React.PureComponent {
 }
 
 const mapDispatchToProps = {
-  setColorPalette: actions.setColorPalette
+  setColorPalette: actions.setColorPalette,
 };
 
-export default connect(null, mapDispatchToProps)(translate(null, { wait: false })(ColorPaletteHeader));
+export default connect(null, mapDispatchToProps)(withTranslation(null, { wait: false })(ColorPaletteHeader));

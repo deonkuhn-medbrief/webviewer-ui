@@ -29,8 +29,9 @@ class DocumentContainer extends React.PureComponent {
     isHeaderOpen: PropTypes.bool,
     dispatch: PropTypes.func.isRequired,
     openElement: PropTypes.func.isRequired,
+    closeElements: PropTypes.func.isRequired,
     displayMode: PropTypes.string.isRequired,
-    swipeOrientation: PropTypes.string
+    leftPanelWidth: PropTypes.number,
   }
 
   constructor(props) {
@@ -45,9 +46,6 @@ class DocumentContainer extends React.PureComponent {
     if (isIE) {
       updateContainerWidth(prevProps, this.props, this.container.current);
     }
-    if (prevProps.swipeOrientation !== this.props.swipeOrientation){
-      TouchEventManager.updateOrientation(this.props.swipeOrientation);
-    }
   }
 
   componentDidMount() {
@@ -56,7 +54,7 @@ class DocumentContainer extends React.PureComponent {
     core.setViewerElement(this.document.current);
 
     const { hasPath, doesDocumentAutoLoad, document, advanced, dispatch } = this.props;
-    if (hasPath && doesDocumentAutoLoad) {
+    if ((hasPath && doesDocumentAutoLoad) || document.isOffline) {
       loadDocument({ document, advanced }, dispatch);
     }
 
@@ -65,6 +63,7 @@ class DocumentContainer extends React.PureComponent {
     }
 
     this.container.current.addEventListener('wheel', this.onWheel, { passive: false });
+    window.addEventListener('keydown', this.onKeyDown);
   }
 
   componentWillUnmount() {
@@ -74,17 +73,31 @@ class DocumentContainer extends React.PureComponent {
     }
 
     this.container.current.removeEventListener('wheel', this.onWheel, { passive: false });
+    window.removeEventListener('keydown', this.onKeyDown);
+  }
+
+  onKeyDown = e => {
+    const { currentPage, totalPages } = this.props;
+    const { scrollTop, clientHeight, scrollHeight } = this.container.current;
+    const reachedTop = scrollTop === 0;
+    const reachedBottom = Math.abs(scrollTop + clientHeight - scrollHeight) <= 1;
+
+    if ((e.key === 'ArrowUp' || e.which === 38) && reachedTop && currentPage > 1) {
+      this.pageUp();
+    } else if ((e.key === 'ArrowDown' || e.which === 40) && reachedBottom && currentPage < totalPages) {
+      this.pageDown();
+    }
   }
 
   handleWindowResize = () => {
     handleWindowResize(this.props, this.container.current);
   }
 
-  onWheel = e => {    
+  onWheel = e => {
     if (e.metaKey || e.ctrlKey) {
       e.preventDefault();
       this.wheelToZoom(e);
-    } else if (!core.isContinuousDisplayMode()){
+    } else if (!core.isContinuousDisplayMode()) {
       this.wheelToNavigatePages(e);
     }
   }
@@ -93,27 +106,25 @@ class DocumentContainer extends React.PureComponent {
     const { currentPage, totalPages } = this.props;
     const { scrollTop, scrollHeight, clientHeight } = this.container.current;
     const reachedTop = scrollTop === 0;
-    // we have 1 instead of just checking scrollTop + clientHeight === scrollHeight is because
-    // for some screens it has ~1 pixels off
     const reachedBottom = Math.abs(scrollTop + clientHeight - scrollHeight) <= 1;
 
     if (e.deltaY < 0 && reachedTop && currentPage > 1) {
-      this.navigatePagesUp();
+      this.pageUp();
     } else if (e.deltaY > 0 && reachedBottom && currentPage < totalPages) {
-      this.navigatePagesDown();
+      this.pageDown();
     }
   }
 
-  navigatePagesUp = () => {
+  pageUp = () => {
     const { currentPage, displayMode } = this.props;
     const { scrollHeight, clientHeight } = this.container.current;
     const newPage = currentPage - getNumberOfPagesToNavigate(displayMode);
 
     core.setCurrentPage(Math.max(newPage, 1));
-    this.container.current.scrollTop = scrollHeight - clientHeight;    
+    this.container.current.scrollTop = scrollHeight - clientHeight;
   }
 
-  navigatePagesDown = () => {
+  pageDown = () => {
     const { currentPage, displayMode, totalPages } = this.props;
     const newPage = currentPage + getNumberOfPagesToNavigate(displayMode);
 
@@ -140,15 +151,23 @@ class DocumentContainer extends React.PureComponent {
     core.scrollViewUpdated();
   }
 
+  handleScroll = () => {
+    this.props.closeElements([
+      'annotationPopup',
+      'contextMenuPopup',
+      'textPopup',
+    ]);
+  }
+
   getClassName = props => {
     const { isLeftPanelOpen, isRightPanelOpen, isHeaderOpen, isSearchOverlayOpen } = props;
-    
+
     return [
       'DocumentContainer',
       isLeftPanelOpen ? 'left-panel' : '',
       isRightPanelOpen ? 'right-panel' : '',
       isHeaderOpen ? '' : 'no-header',
-      isSearchOverlayOpen ? 'search-overlay' : ''
+      isSearchOverlayOpen ? 'search-overlay' : '',
     ].join(' ').trim();
   }
 
@@ -156,13 +175,13 @@ class DocumentContainer extends React.PureComponent {
     let className;
 
     if (isIE) {
-      className = getClassNameInIE(this.props);  
+      className = getClassNameInIE(this.props);
     } else {
       className = this.getClassName(this.props);
     }
 
-    return(
-      <div className={className} ref={this.container} data-element="documentContainer" onTransitionEnd={this.onTransitionEnd}>
+    return (
+      <div className={className} ref={this.container} data-element="documentContainer" onScroll={this.handleScroll} onTransitionEnd={this.onTransitionEnd}>
         <div className="document" ref={this.document}></div>
       </div>
     );
@@ -182,12 +201,14 @@ const mapStateToProps = state => ({
   isHeaderOpen: selectors.isElementOpen(state, 'header') && !selectors.isElementDisabled(state, 'header'),
   displayMode: selectors.getDisplayMode(state),
   totalPages: selectors.getTotalPages(state),
-  swipeOrientation: selectors.getSwipeOrientation(state)
+  // using leftPanelWidth to trigger render
+  leftPanelWidth: selectors.getLeftPanelWidth(state),
 });
 
 const mapDispatchToProps = dispatch => ({
   dispatch,
-  openElement: dataElement => dispatch(actions.openElement(dataElement)) 
+  openElement: dataElement => dispatch(actions.openElement(dataElement)),
+  closeElements: dataElements => dispatch(actions.closeElements(dataElements)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DocumentContainer);

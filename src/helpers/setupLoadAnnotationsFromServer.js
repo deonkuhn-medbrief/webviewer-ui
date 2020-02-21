@@ -1,7 +1,7 @@
 import core from 'core';
-import { documentTypes } from 'constants/types';
+import { workerTypes } from 'constants/types';
 
-export default store =>  {
+export default store => {
   const state = store.getState();
   const { serverUrl, serverUrlHeaders } = state.advanced;
 
@@ -15,7 +15,9 @@ export default store =>  {
 
     if (window.readerControl.serverFailed) {
       callback(originalData);
-    } else if (window.readerControl.loadedFromServer) {
+      return;
+    }
+    if (window.readerControl.loadedFromServer) {
       callback('');
       return;
     }
@@ -31,7 +33,7 @@ export default store =>  {
       data: docIdQuery,
       headers: serverUrlHeaders,
       success: data => {
-        if (!_.isNull(data) && !_.isUndefined(data)) {
+        if (data !== null && data !== undefined) {
           window.readerControl.loadedFromServer = true;
           callback(data);
         } else {
@@ -41,19 +43,23 @@ export default store =>  {
       },
       error: (jqXHR, textStatus, errorThrown) => {
         window.readerControl.serverFailed = true;
-        console.warn('Error ' + jqXHR.status + ' ' + errorThrown + ': Annotations could not be loaded from the server.');
+        console.warn(
+          `Error ${jqXHR.status} ${errorThrown}: Annotations could not be loaded from the server.`,
+        );
         callback(originalData);
       },
-      dataType: 'xml'
+      dataType: 'xml',
     });
   };
 
   core.setInternalAnnotationsTransform(getAnnotsFromServer);
-  core.setPagesUpdatedInternalAnnotationsTransform((origData, pages, callback) => {
-    getAnnotsFromServer(origData, callback);
-  });
+  core.setPagesUpdatedInternalAnnotationsTransform(
+    (origData, pages, callback) => {
+      getAnnotsFromServer(origData, callback);
+    },
+  );
   core.addEventListener('documentLoaded', function() {
-    if (window.docViewer.getDocument().getType() === documentTypes.OFFICE) {
+    if (window.docViewer.getDocument().getType() === workerTypes.OFFICE) {
       getAnnotsFromServer(null, function(data) {
         window.docViewer.getAnnotationManager().importAnnotationsAsync(data);
       });

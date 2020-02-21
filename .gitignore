@@ -9,6 +9,7 @@ notes
 coverage
 build
 tests
+lib
 jest.config.js
-package-lock.json
 .eslintignore
+keys

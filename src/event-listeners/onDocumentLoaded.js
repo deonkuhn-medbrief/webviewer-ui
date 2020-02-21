@@ -12,13 +12,9 @@ export default dispatch => () => {
   setTimeout(() => {
     dispatch(actions.closeElement('progressModal'));
     dispatch(actions.resetLoadingProgress());
+    dispatch(actions.resetUploadProgress());
+    dispatch(actions.setIsUploading(false));
   }, 300);
-
-  if (window.innerWidth <= 640) {
-    core.fitToWidth();
-  } else {
-    core.fitToPage();
-  }
 
   if (onFirstLoad) {
     onFirstLoad = false;
@@ -34,7 +30,7 @@ export default dispatch => () => {
   }
 
   core.setOptions({
-    enableAnnotations: getHashParams('a', false)
+    enableAnnotations: getHashParams('a', false),
   });
 
   core.getOutlines(outlines => {

@@ -14,14 +14,13 @@ export default store => {
   const onZoomUpdated = eventListeners.onZoomUpdated(dispatch);
   const onPageNumberUpdated = eventListeners.onPageNumberUpdated(dispatch);
   const onUpdateAnnotationPermission = eventListeners.onUpdateAnnotationPermission(store);
-  const onAnnotationSelected = eventListeners.onAnnotationSelected(dispatch);
   const onAnnotationChanged = eventListeners.onAnnotationChanged(dispatch);
   const onStampAnnotationAdded = eventListeners.onStampAnnotationAdded(dispatch);
   const onSignatureAnnotationAdded = eventListeners.onSignatureAnnotationAdded(dispatch);
   const onStickyAnnotationAdded = eventListeners.onStickyAnnotationAdded(store);
   const onKeyDown = eventListeners.onKeyDown(store);
-  const onFullScreenChange = eventListeners.onFullScreenChange(dispatch);
-  const onLayoutChanged = eventListeners.onLayoutChanged(dispatch); 
+  const onFullScreenChange = eventListeners.onFullScreenChange(store);
+  const onLayoutChanged = eventListeners.onLayoutChanged(dispatch);
   const onLocationSelected = eventListeners.onLocationSelected(store);
 
   return {
@@ -38,7 +37,6 @@ export default store => {
       core.addEventListener('pageNumberUpdated', onPageNumberUpdated);
       core.addEventListener('layoutChanged', onLayoutChanged);
       core.addEventListener('updateAnnotationPermission', onUpdateAnnotationPermission);
-      core.addEventListener('annotationSelected', onAnnotationSelected);
       core.addEventListener('annotationChanged', onAnnotationChanged);
       core.getTool('AnnotationCreateStamp').on('annotationAdded', onStampAnnotationAdded);
       core.getTool('AnnotationCreateSticky').on('annotationAdded', onStickyAnnotationAdded);
@@ -48,6 +46,7 @@ export default store => {
       document.addEventListener('fullscreenchange', onFullScreenChange);
       document.addEventListener('mozfullscreenchange', onFullScreenChange);
       document.addEventListener('webkitfullscreenchange', onFullScreenChange);
+      document.addEventListener('MSFullscreenChange', onFullScreenChange);
     },
     removeEventHandlers: () => {
       core.removeEventListener('beforeDocumentLoaded', onBeforeDocumentLoaded);
@@ -62,7 +61,6 @@ export default store => {
       core.removeEventListener('pageNumberUpdated', onPageNumberUpdated);
       core.removeEventListener('layoutChanged', onLayoutChanged);
       core.removeEventListener('updateAnnotationPermission', onUpdateAnnotationPermission);
-      core.removeEventListener('annotationSelected', onAnnotationSelected);
       core.removeEventListener('annotationChanged', onAnnotationChanged);
       core.getTool('AnnotationCreateStamp').off('annotationAdded', onStampAnnotationAdded);
       core.getTool('AnnotationCreateSticky').off('annotationAdded', onStickyAnnotationAdded);
@@ -71,6 +69,7 @@ export default store => {
       document.removeEventListener('fullscreenchange', onFullScreenChange);
       document.removeEventListener('mozfullscreenchange', onFullScreenChange);
       document.removeEventListener('webkitfullscreenchange', onFullScreenChange);
-    }
+      document.removeEventListener('MSFullscreenChange', onFullScreenChange);
+    },
   };
 };

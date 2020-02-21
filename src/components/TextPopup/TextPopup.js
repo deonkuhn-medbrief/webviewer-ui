@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import onClickOutside from 'react-onclickoutside';
 
 import ActionButton from 'components/ActionButton';
 
@@ -22,7 +23,7 @@ class TextPopup extends React.PureComponent {
     dispatch: PropTypes.func.isRequired,
     openElement: PropTypes.func.isRequired,
     closeElement: PropTypes.func.isRequired,
-    closeElements: PropTypes.func.isRequired
+    closeElements: PropTypes.func.isRequired,
   }
 
   constructor() {
@@ -30,7 +31,7 @@ class TextPopup extends React.PureComponent {
     this.popup = React.createRef();
     this.state = {
       left: 0,
-      top: 0
+      top: 0,
     };
   }
 
@@ -45,7 +46,7 @@ class TextPopup extends React.PureComponent {
 
   componentDidUpdate(prevProps) {
     if (!prevProps.isOpen && this.props.isOpen) {
-      this.props.closeElements([ 'annotationPopup', 'contextMenuPopup' ]);
+      this.props.closeElements(['annotationPopup', 'contextMenuPopup']);
     }
   }
 
@@ -53,9 +54,13 @@ class TextPopup extends React.PureComponent {
     core.getTool('TextSelect').off('selectionComplete', this.onSelectionComplete);
   }
 
+  handleClickOutside = () => {
+    this.props.closeElement('textPopup');
+  }
+
   onSelectionComplete = (e, startQuad, allQuads) => {
     const { isDisabled, openElement } = this.props;
-    
+
     if (!isDisabled) {
       this.positionTextPopup(allQuads);
       openElement('textPopup');
@@ -81,18 +86,18 @@ class TextPopup extends React.PureComponent {
     const { left, top } = this.state;
     const className = getClassName('Popup TextPopup', this.props);
     const isCreateRedactionEnabled = core.isCreateRedactionEnabled();
-    
+
     return (
-      <div className={className} data-element={'textPopup'} ref={this.popup} style={{ left, top }} onMouseDown={e => e.stopPropagation()}>
+      <div className={className} data-element={'textPopup'} ref={this.popup} style={{ left, top }}>
         <ActionButton dataElement="copyTextButton" title="action.copy" img="ic_copy_black_24px" onClick={this.onClickCopy} />
         {this.props.isAnnotationToolsEnabled &&
-          <React.Fragment>
+          <>
             <ActionButton dataElement="textHighlightToolButton" title="annotation.highlight" img="ic_annotation_highlight_black_24px" onClick={this.highlightText} />
             <ActionButton dataElement="textUnderlineToolButton" title="annotation.underline" img="ic_annotation_underline_black_24px" onClick={this.underlineText} />
             <ActionButton dataElement="textSquigglyToolButton" title="annotation.squiggly" img="ic_annotation_squiggly_black_24px" onClick={this.squigglyText} />
             <ActionButton dataElement="textStrikeoutToolButton" title="annotation.strikeout" img="ic_annotation_strikeout_black_24px" onClick={this.strikeoutText} />
             { isCreateRedactionEnabled && <ActionButton dataElement="textRedactToolButton" title="option.redaction.markForRedaction" img="ic_annotation_add_redact_black_24px" onClick={this.redactText} /> }
-          </React.Fragment>
+          </>
         }
       </div>
     );
@@ -112,4 +117,4 @@ const mapDispatchToProps = dispatch => ({
   closeElements: dataElements => dispatch(actions.closeElements(dataElements)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(TextPopup);
+export default connect(mapStateToProps, mapDispatchToProps)(onClickOutside(TextPopup));

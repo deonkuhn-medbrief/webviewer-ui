@@ -1,43 +1,41 @@
-import i18next from 'i18next';
-
 import core from 'core';
 import getBackendPromise from 'helpers/getBackendPromise';
 import { fireError } from 'helpers/fireEvent';
-import { engineTypes, documentTypes } from 'constants/types';
+import { engineTypes, workerTypes } from 'constants/types';
 import { supportedPDFExtensions, supportedOfficeExtensions, supportedBlackboxExtensions, supportedExtensions, supportedClientOnlyExtensions } from 'constants/supportedFiles';
 import actions from 'actions';
-import selectors from 'selectors';
 
-export default (state, dispatch) => {
+export default (state, dispatch, extraOptions) => {
   core.closeDocument(dispatch).then(() => {
     checkByteRange(state).then(streaming => {
-      Promise.all([getPartRetriever(state, streaming), getDocOptions(state, dispatch, streaming)])
-      .then(params => {
-        const partRetriever = params[0];
-        const docOptions = params[1];
+      Promise.all([getPartRetriever(state, streaming, dispatch), getDocOptions(state, dispatch, streaming)])
+        .then(params => {
+          const partRetriever = params[0];
+          const docOptions = params[1];
 
-        if (partRetriever.on) {
-          partRetriever.on('documentLoadingProgress', (e, loaded, total) => {
-            dispatch(actions.setDocumentLoadingProgress(loaded / total));
-          });
-          partRetriever.on('error', function(e, type, message) {
-            fireError(message);
-          });
-        }
-        if (partRetriever.setErrorCallback) {
-          partRetriever.setErrorCallback(fireError);
-        }
-        if (partRetriever instanceof window.CoreControls.PartRetrievers.BlackBoxPartRetriever && isLocalFile(state)) {
-          console.error(`${selectors.getDocumentPath(state)} is a local file which is not accessible by the PDFTron server. To solve this, you can either use your own local server or pass a publicly accessible URL`);
-        }
+          if (partRetriever.on) {
+            // If its a blackbox part retriever but the user uploaded a local file,
+          // we dont set this because we already show an upload modal
+            if (!partRetriever._isBlackboxLocalFile) {
+              partRetriever.on('documentLoadingProgress', (e, loaded, total) => {
+                dispatch(actions.setDocumentLoadingProgress(loaded / total));
+              });
+            }
+            partRetriever.on('error', function(e, type, message) {
+              fireError(message);
+            });
+          }
+          if (partRetriever.setErrorCallback) {
+            partRetriever.setErrorCallback(fireError);
+          }
 
-        dispatch(actions.openElement('progressModal'));
-        core.loadAsync(partRetriever, docOptions);
-      })
-      .catch(error => {
-        fireError(error);
-        console.error(error);
-      });
+          dispatch(actions.openElement('progressModal'));
+          core.loadAsync(partRetriever, { ...extraOptions, ...docOptions });
+        })
+        .catch(error => {
+          fireError(error);
+          console.error(error);
+        });
     });
   });
 };
@@ -65,22 +63,27 @@ const checkByteRange = state => {
         error: () => {
           streaming = true;
           resolve(streaming);
-        }
+        },
       });
     }
   });
 };
 
-const getPartRetriever = (state, streaming) => {
-  const { path, initialDoc, file, isOffline, filename, pdfDoc } = state.document;
-  const { azureWorkaround, customHeaders, decrypt, decryptOptions, externalPath, pdftronServer, disableWebsockets, useDownloader, withCredentials } = state.advanced;
-  const documentPath = path || initialDoc;
+const getPartRetriever = (state, streaming, dispatch) => {
+  const { path, initialDoc, file, isOffline, pdfDoc, ext } = state.document;
+  let { filename } = state.document;
+  const { azureWorkaround, customHeaders, decrypt, decryptOptions, externalPath, pdftronServer, disableWebsockets, useDownloader, withCredentials, singleServerMode, cacheKey } = state.advanced;
+  let documentPath = path || initialDoc;
 
   const engineType = getEngineType(state);
 
+  if (ext && !filename) {
+    filename = createFakeFilename(initialDoc, ext);
+  }
+
   return new Promise(resolve => {
     let partRetriever;
-    var partRetrieverName = '';
+    let partRetrieverName = '';
     if (engineType === engineTypes.PDFNETJS) {
       if (pdfDoc) {
         // the PDFDoc object can be used as a part retriever to load into the viewer
@@ -95,7 +98,29 @@ const getPartRetriever = (state, streaming) => {
       }
     } else if (engineType === engineTypes.PDFTRON_SERVER) {
       partRetrieverName = 'BlackBoxPartRetriever';
-      partRetriever = new window.CoreControls.PartRetrievers.BlackBoxPartRetriever(documentPath, pdftronServer, { disableWebsockets });
+      const blackboxOptions = { disableWebsockets, singleServerMode, cacheKey };
+      const needsUpload = file && file.name;
+
+      // If PDFTron server is set and they try and upload a local file
+      if (needsUpload) {
+        documentPath = null; // (BlackBoxPartRetriever does upload when this is null)
+        blackboxOptions.uploadData = {
+          fileHandle: file,
+          loadCallback: () => {},
+          onProgress: e => {
+            dispatch(actions.setUploadProgress(e.loaded / e.total));
+          },
+          extension: file.name.split('.').pop(),
+        };
+        blackboxOptions.filename = file.name;
+
+        dispatch(actions.setIsUploading(true)); // this is reset in onDocumentLoaded event
+      }
+
+      partRetriever = new window.CoreControls.PartRetrievers.BlackBoxPartRetriever(documentPath, pdftronServer, blackboxOptions);
+      if (needsUpload) {
+        partRetriever._isBlackboxLocalFile = true;
+      }
     } else if (engineType === engineTypes.UNIVERSAL) {
       const cache = window.CoreControls.PartRetrievers.CacheHinting.NO_HINT;
 
@@ -130,7 +155,7 @@ const getPartRetriever = (state, streaming) => {
     }
 
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('Loading %c' + documentPath + '%c with %c' + partRetrieverName, 'font-weight: bold; color: blue', '', 'font-weight: bold; color: red');
+      console.warn(`Loading %c${documentPath}%c with %c${partRetrieverName}`, 'font-weight: bold; color: blue', '', 'font-weight: bold; color: red');
     }
 
     if (customHeaders && partRetriever.setCustomHeaders) {
@@ -150,10 +175,10 @@ const getDocOptions = (state, dispatch, streaming) => {
 
   return new Promise(resolve => {
     if (engineType === engineTypes.UNIVERSAL) {
-      dispatch(actions.setDocumentType(documentTypes.XOD));
+      dispatch(actions.setDocumentType(workerTypes.XOD));
       resolve(docId);
     } else {
-      const { pdfWorkerTransportPromise, officeWorkerTransportPromise } = state.advanced;
+      const { pdfWorkerTransportPromise, officeWorkerTransportPromise, forceClientSideInit, pageSizes } = state.advanced;
 
       Promise.all([getBackendPromise(pdfType), getBackendPromise(officeType)]).then(([pdfBackendType, officeBackendType]) => {
         let passwordChecked = false; // to prevent infinite loop when wrong password is passed as an argument
@@ -172,134 +197,129 @@ const getDocOptions = (state, dispatch, streaming) => {
           }
         };
         const onError = error => {
-          if (typeof error === 'string') {
-            fireError(error);
-          } else if (error.type === 'InvalidPDF') {
-            fireError(i18next.t('message.badDocument'));
-          }
+          fireError(error);
           console.error(error);
         };
         const workerHandlers = {
           workerLoadingProgress: percent => {
             dispatch(actions.setWorkerLoadingProgress(percent));
-          }
+          },
         };
 
         const docName = getDocName(state);
-        const options = { docName, pdfBackendType, officeBackendType, engineType, workerHandlers, pdfWorkerTransportPromise, officeWorkerTransportPromise };
-        let { type, extension, workerTransportPromise } = getDocTypeData(options);
+        const options = { docName, pdfBackendType, officeBackendType, engineType, workerHandlers, pdfWorkerTransportPromise, officeWorkerTransportPromise, forceClientSideInit };
+        const { type, extension, workerTransportPromise } = getDocTypeData(options);
         if (workerTransportPromise) {
           workerTransportPromise.catch(workerError => {
-            if (typeof workerError === 'string') {
-              fireError(workerError);
-              console.error(workerError);
-            } else {
-              fireError(workerError.message);
-              console.error(workerError.message);
-            }
+            const error = typeof workerError === 'string' ? workerError : workerError.message;
+            fireError(error);
+            console.error(error);
           });
         }
 
         dispatch(actions.setDocumentType(type));
 
-        resolve({ docId, pdfBackendType, officeBackendType, extension, getPassword, onError, streaming, type, workerHandlers, workerTransportPromise });
+        resolve({ docId, pdfBackendType, officeBackendType, extension, getPassword, onError, streaming, type, workerHandlers, workerTransportPromise, forceClientSideInit, pageSizes });
       });
     }
   });
 };
 
 const getEngineType = state => {
-  const { engineType, pdftronServer } = state.advanced;
-
   const docName = getDocName(state);
-  const fileExtension = getDocumentExtension(docName, engineType);
+  const fileExtension = getDocumentExtension(docName);
+  const { pdftronServer } = state.advanced;
 
-  if (engineType) {
-    return engineType;
-  } else if (fileExtension === 'xod') {
-    return engineTypes.UNIVERSAL;
-  } else if (pdftronServer) {
-    return engineTypes.PDFTRON_SERVER;
-  } else if (isPDFNetJSExtension(fileExtension)) {
-    return engineTypes.PDFNETJS;
-  } else {
-    return engineTypes.PDFNETJS;
+  let engineType = state.advanced.engineType;
+  if (engineType === engineTypes.AUTO) {
+    if (fileExtension === 'xod') {
+      engineType = engineTypes.UNIVERSAL;
+    } else if (pdftronServer) {
+      engineType = engineTypes.PDFTRON_SERVER;
+    } else {
+      if (docName && !fileExtension) {
+        console.warn(`File extension cannot be determined from ${docName}. Falling back to pdf`);
+      }
+      engineType = engineTypes.PDFNETJS;
+    }
   }
+
+  if (fileExtension) {
+    if (!supportedExtensions.includes(fileExtension)) {
+      console.error(`File extension ${fileExtension} from ${docName} is not supported. Please see https://www.pdftron.com/documentation/web/guides/file-format-support for a full list of file formats supported by WebViewer`);
+    } else if (
+      engineType === engineTypes.PDFNETJS &&
+      !supportedClientOnlyExtensions.includes(fileExtension) &&
+      supportedBlackboxExtensions.includes(fileExtension)
+    ) {
+      console.error(`File extension ${fileExtension} from ${docName} is only supported by using WebViewer with WebViewer Server. See https://www.pdftron.com/documentation/web/guides/file-format-support for a full list of file formats supported by WebViewer. Visit https://www.pdftron.com/documentation/web/guides/wv-server-deployment for more information about WebViewer Server`);
+    }
+  }
+
+  return engineType;
 };
 
-export const getDocumentExtension = (doc, engineType) => {
-  let extension;
+export const getDocumentExtension = docName => {
+  let extension = '';
 
-  if (doc) {
-    const result = /\.([a-zA-Z]+)(&|$|\?|#)/.exec(doc);
+  if (docName) {
+    const result = /\.([a-zA-Z]+)(&|$|\?|#)/.exec(docName);
     extension = result && result[1].toLowerCase();
   }
 
-  if (extension) {
-    if (!supportedExtensions.includes(extension)) {
-      console.error(`File extension ${extension} from ${doc} is not supported.\nWebViewer client only mode supports ${supportedClientOnlyExtensions.join(', ')}.\nWebViewer server supports ${supportedBlackboxExtensions.join(', ')}`);
-    }
-  } else if (doc && engineType === engineTypes.AUTO) {
-    console.warn(`File extension cannot be determined from ${doc}. Falling back to pdf`);
-  }
-
-  return extension ? extension : '';
+  return extension;
 };
 
 export const getDocName = state => {
   // if the filename is specified then use that for checking the extension instead of the doc path
-  const { path, filename, initialDoc } = state.document;
+  let { path, filename, initialDoc, ext } = state.document;
+  if (ext && !filename) {
+    filename = createFakeFilename(path || initialDoc, ext);
+  }
   return filename || path || initialDoc;
 };
 
-const isPDFNetJSExtension = extension => {
-  return isOfficeExtension(extension) || isPDFExtension(extension);
+const createFakeFilename = (initialDoc, ext) => {
+  // get end of the URL without the query or hash parameters
+  const match = initialDoc.match(/(^|[\/\\])([a-zA-Z0-9.]+)(&|$|\?|#)/);
+  const filename = match && match[2];
+
+  return `${filename || initialDoc.replace(/^.*[\\\/]/, '')}.${ext.replace(/^\./, '')}`;
 };
 
-export const isOfficeExtension = extension => {
-  return supportedOfficeExtensions.indexOf(extension) !== -1;
-};
+export const isOfficeExtension = extension => supportedOfficeExtensions.indexOf(extension) !== -1;
 
-export const isPDFExtension = extension => {
-  return supportedPDFExtensions.indexOf(extension) !== -1;
-};
+export const isPDFExtension = extension => supportedPDFExtensions.indexOf(extension) !== -1;
 
 const getDocTypeData = ({ docName, pdfBackendType, officeBackendType, engineType, workerHandlers, pdfWorkerTransportPromise, officeWorkerTransportPromise }) => {
-  const originalExtension = getDocumentExtension(docName, engineType);
+  const originalExtension = getDocumentExtension(docName);
 
   let type;
   let extension = originalExtension;
   let workerTransportPromise;
 
   if (engineType === engineTypes.PDFTRON_SERVER) {
-    type = documentTypes.BLACKBOX;
+    type = workerTypes.BLACKBOX;
   } else {
     const usingOfficeWorker = supportedOfficeExtensions.indexOf(originalExtension) !== -1;
     if (usingOfficeWorker && !officeWorkerTransportPromise) {
-      type = documentTypes.OFFICE;
+      type = workerTypes.OFFICE;
       workerTransportPromise = window.CoreControls.initOfficeWorkerTransports(officeBackendType, workerHandlers, window.sampleL);
     } else if (!usingOfficeWorker && !pdfWorkerTransportPromise) {
-      type = documentTypes.PDF;
+      type = workerTypes.PDF;
       // if the extension isn't pdf or an image then assume it's a pdf
       if (supportedPDFExtensions.indexOf(originalExtension) === -1) {
         extension = 'pdf';
       }
       workerTransportPromise = window.CoreControls.initPDFWorkerTransports(pdfBackendType, workerHandlers, window.sampleL);
     } else if (usingOfficeWorker) {
-      type = documentTypes.OFFICE;
+      type = workerTypes.OFFICE;
       workerTransportPromise = officeWorkerTransportPromise;
     } else {
-      type = documentTypes.PDF;
+      type = workerTypes.PDF;
       workerTransportPromise = pdfWorkerTransportPromise;
     }
   }
 
   return { type, extension, workerTransportPromise };
 };
-
-const isLocalFile = state => {
-  const path = selectors.getDocumentPath(state);
-
-  return !/https?:\/\//.test(path);
-};
-

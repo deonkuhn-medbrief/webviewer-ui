@@ -1,25 +1,31 @@
 @import '../../constants/styles';
 @import '../../constants/modal';
-@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600');
 
 $signature-modal-shared-color: #E1E1E3;
 
 .SignatureModal {
   @extend %modal;
-  font-family: SourceSansPro-Regular;
+  font-size: 0.9em;
 
   .container {
     @extend %modal-shared-container-style;
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     border-radius: 4px;
     box-shadow: 0 2px 16px 0 $signature-modal-shared-color; 
-
-    width: 600px;
-    height: 350px;
 
     @include mobile {
       width: 100%;
     }
 
+    @include tablet-and-mobile {
+      @media (orientation: landscape) {
+        max-height: 100%;
+      }
+    }
+    
     .header {
       margin: 11px 11px 0px 24px;
       display: flex;
@@ -31,13 +37,11 @@ $signature-modal-shared-color: #E1E1E3;
       border-radius: 4px;
       border: 1px solid $signature-modal-shared-color;
       margin: 18px 24px 0px 24px;
-      width: 552px;
       height: 200px;
       display: flex;
 
       @include mobile {
         margin: 18px 12px 0px 12px;
-        width: calc(100% - 24px);
       }
 
       &-canvas {
@@ -59,8 +63,7 @@ $signature-modal-shared-color: #E1E1E3;
 
       &-sign-here {
         color: $signature-modal-shared-color;
-        font-weight: normal;
-        font-size: 18px;
+        font-size: 16px;
       }
 
       &-clear {
@@ -69,7 +72,6 @@ $signature-modal-shared-color: #E1E1E3;
         top: 16px;
         right: 16px;
         color: #757575;
-        font-size: 16px;
         font-weight: 600;
         cursor: pointer;
 
@@ -81,11 +83,10 @@ $signature-modal-shared-color: #E1E1E3;
 
     .footer {
       display: flex;
-      justify-content: space-between;
       margin: 20px 16px;
       align-items: center;
 
-      .signature-save{
+      .signature-save {
         position: relative;
         display: flex;
         align-items: center;
@@ -98,7 +99,7 @@ $signature-modal-shared-color: #E1E1E3;
           & + label:before {
             cursor: pointer;
             content: '';
-            margin-right: 10px;
+            margin: 1px 10px 0px 0px;
             display: inline-block;
             vertical-align: text-top;
             width: 16px;
@@ -133,16 +134,17 @@ $signature-modal-shared-color: #E1E1E3;
       }
 
       .signature-create {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         color: #FFFFFF;
-        font-family: SourceSansPro-Semibold;
+        font-weight: 600;
         padding: 6px 18px;
+        margin-right: 8px;
         background: #00A4E4;
         border-radius: 4px 4px 4px 4px;
         border: 1px solid #00A4E4;
         height: 32px;
-        font-size: 16px;
-        font-weight: 600;
-        text-align: center;
         cursor: pointer;
 
         &:hover {

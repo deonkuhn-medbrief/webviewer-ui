@@ -3,11 +3,15 @@ let maxZoom = 99.99;
 
 export const getMinZoomLevel = () => minZoom;
 
-export const setMinZoomLevel = zoom => minZoom = zoom;
+export const setMinZoomLevel = zoom => {
+  minZoom = zoom;
+};
 
 export const getMaxZoomLevel = () => maxZoom;
 
-export const setMaxZoomLevel = zoom => maxZoom = zoom;
+export const setMaxZoomLevel = zoom => {
+  maxZoom = zoom;
+};
 
 export const stepToZoomFactorRangesMap = {
   '0.075': [null, 0.8],
@@ -16,10 +20,10 @@ export const stepToZoomFactorRangesMap = {
   '2': [3.5, 8],
   '4': [8, 32],
   '8': [32, 64],
-  '16': [64, null]
+  '16': [64, null],
 };
 
 export default {
   setMinZoomLevel,
-  setMaxZoomLevel
+  setMaxZoomLevel,
 };

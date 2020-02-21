@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { translate } from 'react-i18next';
+import { withTranslation } from 'react-i18next';
 
 import { isIE11 } from 'helpers/device';
 import { circleRadius, svgHeight } from 'constants/slider';
@@ -12,12 +12,12 @@ class Slider extends React.PureComponent {
     property: PropTypes.string.isRequired,
     value: PropTypes.oneOfType([
       PropTypes.number,
-      PropTypes.string
+      PropTypes.string,
     ]),
     displayProperty: PropTypes.string.isRequired,
     displayValue: PropTypes.oneOfType([
       PropTypes.number,
-      PropTypes.string
+      PropTypes.string,
     ]),
     getCirclePosition: PropTypes.func.isRequired,
     convertRelativeCirclePositionToValue: PropTypes.func.isRequired,
@@ -26,16 +26,17 @@ class Slider extends React.PureComponent {
   }
 
   constructor(props) {
-		super(props);
-		this.isMouseDown = false;
+    super(props);
+    this.isMouseDown = false;
     this.sliderSvg = React.createRef();
-    this.lineLength = 0;  
+    this.lineLength = 0;
   }
-  
+
   componentDidMount() {
     window.addEventListener('mousemove', this.onMove);
     window.addEventListener('mouseup', this.onMouseUp);
     window.addEventListener('orientationchange', this.updateSvg);
+    window.addEventListener('resize', this.updateSvg);
     this.sliderSvg.current.addEventListener('touchmove', this.onMove, { passive: false });
     this.updateSvg();
   }
@@ -44,8 +45,9 @@ class Slider extends React.PureComponent {
     window.removeEventListener('mousemove', this.onMove);
     window.removeEventListener('mouseup', this.onMouseUp);
     window.removeEventListener('orientationchange', this.updateSvg);
+    window.removeEventListener('resize', this.updateSvg);
     this.sliderSvg.current.removeEventListener('touchmove', this.onMove, { passive: false });
-  } 
+  }
 
   updateSvg = () => {
     this.setLineLength();
@@ -53,7 +55,7 @@ class Slider extends React.PureComponent {
   }
 
   setLineLength = () => {
-    this.lineLength = this.sliderSvg.current.getBoundingClientRect().width - 2*circleRadius; 
+    this.lineLength = 0.94 * this.sliderSvg.current.getBoundingClientRect().width - 2 * circleRadius;
   }
 
   onMouseDown = e => {
@@ -80,7 +82,7 @@ class Slider extends React.PureComponent {
     const { property, onStyleChange, convertRelativeCirclePositionToValue } = this.props;
     const relativeCirclePosition = this.getRelativeCirclePosition(e);
     const value = convertRelativeCirclePositionToValue(relativeCirclePosition);
-    
+
     onStyleChange(property, value);
   }
 
@@ -89,8 +91,8 @@ class Slider extends React.PureComponent {
     const lineStart = circleRadius;
     const lineEnd = lineStart + this.lineLength;
     const svgLeft = this.sliderSvg.current.getBoundingClientRect().left;
-    let circlePosition; 
-    
+    let circlePosition;
+
     if (isUsingMouse) {
       circlePosition = e.pageX - svgLeft;
     } else {
@@ -111,7 +113,7 @@ class Slider extends React.PureComponent {
     const circleCenter = getCirclePosition(this.lineLength);
 
     return (
-      <React.Fragment>
+      <>
         <div className="slider__property">
           {t(`option.slider.${displayProperty}`)}
         </div>
@@ -123,7 +125,7 @@ class Slider extends React.PureComponent {
         <div className="slider__value">
           {displayValue}
         </div>
-      </React.Fragment>
+      </>
     );
   }
 
@@ -138,8 +140,8 @@ class Slider extends React.PureComponent {
       );
     }
 
-    return this.renderSlider();  
+    return this.renderSlider();
   }
-}             
+}
 
-export default translate(null, { wait: false })(Slider);
+export default withTranslation(null, { wait: false })(Slider);

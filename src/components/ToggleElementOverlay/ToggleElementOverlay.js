@@ -14,20 +14,26 @@ import './ToggleElementOverlay.scss';
 class ToggleElementOverlay extends React.PureComponent {
   static propTypes = {
     onClick: PropTypes.func.isRequired,
-    isActive: PropTypes.bool
+    isActive: PropTypes.bool,
   }
 
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = { value: '100' };
   }
 
   componentDidMount() {
+    core.addEventListener('documentLoaded', this.onDocumentLoaded);
     core.addEventListener('zoomUpdated', this.onZoomUpdated);
   }
 
   componentWillUnmount() {
+    core.removeEventListener('documentLoaded', this.onDocumentLoaded);
     core.removeEventListener('zoomUpdated', this.onZoomUpdated);
+  }
+
+  onDocumentLoaded = () => {
+    this.setState({ value: Math.ceil(core.getZoom() * 100).toString() });
   }
 
   onZoomUpdated = () => {
@@ -35,7 +41,7 @@ class ToggleElementOverlay extends React.PureComponent {
   }
 
   onKeyPress = e => {
-    if (e.nativeEvent.key === 'Enter' || e.nativeEvent.keyCode === 13){
+    if (e.nativeEvent.key === 'Enter' || e.nativeEvent.keyCode === 13) {
       const zoom = Math.ceil(core.getZoom() * 100).toString();
       if (e.target.value === zoom) {
         return;
@@ -50,8 +56,8 @@ class ToggleElementOverlay extends React.PureComponent {
 
   onChange = e => {
     const re = /^(\d){0,4}$/;
-    if (re.test(e.target.value) || e.target.value === ''){
-      this.setState({ value: e.target.value }); 
+    if (re.test(e.target.value) || e.target.value === '') {
+      this.setState({ value: e.target.value });
     }
   }
 
@@ -67,18 +73,18 @@ class ToggleElementOverlay extends React.PureComponent {
       zoomTo(e.target.value / 100);
     }
   }
-  
-  render() { 
+
+  render() {
     const { isActive, onClick } = this.props;
     return (
       <div className="ToggleElementOverlay">
-        <div className={[ 'OverlayContainer', isActive ? 'active' : '' ].join(' ').trim()}> 
+        <div className={['OverlayContainer', isActive ? 'active' : ''].join(' ').trim()}>
           <div className="OverlayText" onClick={onClick}>
             <input
               type="text"
               className="textarea"
               value={this.state.value}
-              onChange={this.onChange} 
+              onChange={this.onChange}
               onKeyPress={this.onKeyPress}
               onBlur={this.onBlur}
             />
@@ -96,10 +102,9 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  onClick: e => {
-    e.stopPropagation();
+  onClick: () => {
     dispatch(actions.toggleElement('zoomOverlay'));
-  }
+  },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ToggleElementOverlay);

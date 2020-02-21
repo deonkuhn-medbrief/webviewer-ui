@@ -2,10 +2,10 @@ export const engineTypes = {
   UNIVERSAL: 'universal',
   PDFNETJS: 'pdfnetjs',
   PDFTRON_SERVER: 'pdftronServer',
-  AUTO: null
+  AUTO: null,
 };
 
-export const documentTypes = {
+export const workerTypes = {
   PDF: 'pdf',
   OFFICE: 'office',
   BLACKBOX: 'blackbox',

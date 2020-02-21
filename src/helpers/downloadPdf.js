@@ -33,9 +33,9 @@ export default (dispatch, options) => {
 
       const doc = core.getDocument();
       const bbURLPromise = externalURL ? Promise.resolve({ url: externalURL }) : doc.getDownloadLink({ filename: downloadName });
-      
+
       if (bbURLPromise) {
-      const downloadIframe = document.getElementById('download-iframe') || document.createElement('iframe');
+        const downloadIframe = document.getElementById('download-iframe') || document.createElement('iframe');
         downloadIframe.width = 0;
         downloadIframe.height = 0;
         downloadIframe.id = 'download-iframe';

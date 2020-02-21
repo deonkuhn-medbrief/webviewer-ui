@@ -24,41 +24,38 @@ class WarningModal extends React.PureComponent {
     title: PropTypes.string,
     message: PropTypes.string,
     onConfirm: PropTypes.func,
-    onCancel: PropTypes.func
-  }
+    onCancel: PropTypes.func,
+  };
 
-  constructor() {
-    super();
-  }
-
-  componentDidUpdate (prevProps) {
+  componentDidUpdate(prevProps) {
     if (!prevProps.isOpen && this.props.isOpen) {
-      //TODO want to do make something like'closeOtherElements', but that for latter
-        let popUpToClose = getPopupElements().filter(ele => ele !== 'warningModal'); 
-        this.props.closeElements(popUpToClose);
+      // TODO want to do make something like'closeOtherElements', but that for latter
+      const popUpToClose = getPopupElements().filter(
+        ele => ele !== 'warningModal',
+      );
+      this.props.closeElements(popUpToClose);
     }
   }
 
   onCancel = () => {
     // fire cancel event from 'componentDidUpdate'
     if (this.props.onCancel) {
-        this.props.onCancel().then(() => {
-            this.props.closeElement('warningModal');
-        });
-    } else {
+      this.props.onCancel().then(() => {
         this.props.closeElement('warningModal');
+      });
+    } else {
+      this.props.closeElement('warningModal');
     }
-  }
+  };
 
   onConfirm = () => {
     this.props.onConfirm().then(() => {
-            this.props.closeElement('warningModal');
-        }
-    );
-  }
-  
-  render () {
-    const { title, message, confirmBtnText} = this.props;
+      this.props.closeElement('warningModal');
+    });
+  };
+
+  render() {
+    const { title, message, confirmBtnText } = this.props;
 
     if (this.props.isDisabled) {
       return null;
@@ -70,33 +67,45 @@ class WarningModal extends React.PureComponent {
     const cancelBtnText = i18next.t('action.cancel');
 
     return (
-        <div className={className}>
-            <div className="container">
-                <div className="header">{title}</div>
-                <div className="body">{message}</div>
-                <div className="footer">
-                    <Button dataElement="WarningModalClearButton" label={cancelBtnText} onClick={this.onCancel} />
-                    <Button className="warningMessageConfirm" dataElement="WarningModalSignButton" label={label} onClick={this.onConfirm} />
-                </div>
-            </div>
+      <div className={className}>
+        <div className="container">
+          <div className="header">{title}</div>
+          <div className="body">{message}</div>
+          <div className="footer">
+            <Button
+              dataElement="WarningModalClearButton"
+              label={cancelBtnText}
+              onClick={this.onCancel}
+            />
+            <Button
+              className="warningMessageConfirm"
+              dataElement="WarningModalSignButton"
+              label={label}
+              onClick={this.onConfirm}
+            />
+          </div>
         </div>
+      </div>
     );
   }
 }
 
 const mapStateToProps = state => ({
-    title: selectors.getWarningTitle(state) ||  '',
-    message: selectors.getWarningMessage(state),
-    onConfirm: selectors.getWarningConfirmEvent(state),
-    confirmBtnText: selectors.getWarningConfirmBtnText(state),
-    onCancel: selectors.getWarningCancelEvent(state),
-    isDisabled: selectors.isElementDisabled(state, 'warningModal'),
-    isOpen: selectors.isElementOpen(state, 'warningModal'),
+  title: selectors.getWarningTitle(state) || '',
+  message: selectors.getWarningMessage(state),
+  onConfirm: selectors.getWarningConfirmEvent(state),
+  confirmBtnText: selectors.getWarningConfirmBtnText(state),
+  onCancel: selectors.getWarningCancelEvent(state),
+  isDisabled: selectors.isElementDisabled(state, 'warningModal'),
+  isOpen: selectors.isElementOpen(state, 'warningModal'),
 });
 
 const mapDispatchToProps = {
-    closeElement: actions.closeElement,
-    closeElements: actions.closeElements
+  closeElement: actions.closeElement,
+  closeElements: actions.closeElements,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(WarningModal);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(WarningModal);

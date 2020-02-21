@@ -19,6 +19,7 @@ import getTotalPages from './getTotalPages';
 import getCurrentPage from './getCurrentPage';
 import setCurrentPage from './setCurrentPage';
 import getType from './getType';
+import isWebViewerServerDocument from './isWebViewerServerDocument';
 import getSelectedText from './getSelectedText';
 import clearSelection from './clearSelection';
 import setOptions from './setOptions';
@@ -35,6 +36,7 @@ import setViewerElement from './setViewerElement';
 import isContinuousDisplayMode from './isContinuousDisplayMode';
 import scrollViewUpdated from './scrollViewUpdated';
 import canModify from './canModify';
+import canModifyContents from './canModifyContents';
 import deleteAnnotations from './deleteAnnotations';
 import getDisplayAuthor from './getDisplayAuthor';
 import getDocument from './getDocument';
@@ -112,6 +114,7 @@ export default {
   getCurrentPage,
   setCurrentPage,
   getType,
+  isWebViewerServerDocument,
   getSelectedText,
   clearSelection,
   setOptions,
@@ -128,6 +131,7 @@ export default {
   isContinuousDisplayMode,
   scrollViewUpdated,
   canModify,
+  canModifyContents,
   deleteAnnotations,
   getDisplayAuthor,
   getDocument,
@@ -182,5 +186,5 @@ export default {
   showAnnotations,
   hideAnnotations,
   goToOutline,
-  getViewerElement
+  getViewerElement,
 };

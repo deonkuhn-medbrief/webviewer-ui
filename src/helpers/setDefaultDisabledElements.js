@@ -32,7 +32,7 @@ const disableElementsIfReadOnly = (state, dispatch) => {
   if (state.viewer.isReadOnly) {
     const elements = [
       'annotationPopup',
-      ...getAnnotationRelatedElements(state)
+      ...getAnnotationRelatedElements(state),
     ];
 
     dispatch(actions.disableElements(elements, PRIORITY_ONE));
@@ -72,7 +72,7 @@ const disableElementsIfHideAnnotationPanel = dispatch => {
     const elements = [
       'notesPanel',
       'notesPanelButton',
-      'annotationCommentButton'
+      'annotationCommentButton',
     ];
 
     dispatch(actions.disableElements(elements, PRIORITY_ONE));

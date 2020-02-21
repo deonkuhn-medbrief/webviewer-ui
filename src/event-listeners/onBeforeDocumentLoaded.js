@@ -11,17 +11,17 @@ export default dispatch => () => {
   const totalPages = core.getTotalPages();
 
   if (isIOS) {
-    window.CoreControls.SetCachingLevel(0);
-    window.CoreControls.SetPreRenderLevel(2);
-    core.setDisplayMode(window.CoreControls.DisplayModes.Single);
-    dispatch(actions.disableElements([ 'pageTransitionButtons' ]));
-  } else if (totalPages > 500) {
+    window.CoreControls.SetCachingLevel(8); // 32MB
+    window.CoreControls.SetPreRenderLevel(2); // so that we can enable high res thumb
+  }
+
+  if (totalPages >= 500) {
     core.setDisplayMode(window.CoreControls.DisplayModes.Single);
   }
 
   dispatch(actions.setPageLabels(getDefaultPageLabels(totalPages)));
   dispatch(actions.setTotalPages(totalPages));
-  
+
   const currentPage = core.getCurrentPage();
   dispatch(actions.setCurrentPage(currentPage));
 };
