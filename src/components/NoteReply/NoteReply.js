@@ -52,7 +52,6 @@ class NoteReply extends React.PureComponent {
         <span className="time">
           {' ' + dayjs(reply.DateCreated).format(noteDateFormat)}
         </span>
-        <MbAnnotationVisibilityButton annotation={reply}/>
         <NotePopup 
           annotation={reply} 
           isNoteExpanded 

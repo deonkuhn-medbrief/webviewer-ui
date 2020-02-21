@@ -88,4 +88,13 @@
   .highlight {
     background: #fffc95;
   }
+
+  .mbVisibility .StatefulButton {
+    width: 17px;
+    height: 17px;
+      .Icon {
+        width: 15px;
+        height: 15px;
+      }
+  }  
 }

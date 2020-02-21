@@ -5,7 +5,7 @@
   "description": "WebViewer UI built in React",
   "main": "src/index.js",
   "scripts": {
-    "download-webviewer": "npx @pdftron/webviewer-downloader --core-only --path ./lib",
+    "download-webviewer": "npx @pdftron/webviewer-downloader --core-only --v 5.2.9 --path  ./lib",
     "start": "babel-node ./dev-server.js",
     "cypress:open": "cypress open --project ./test/cypress",
     "lint": "eslint ./src/**/*.js",

@@ -115,6 +115,8 @@ import updateTool from './updateTool';
 import useEmbeddedPrint from './useEmbeddedPrint';
 import setMeasurementUnits from './setMeasurementUnits';
 import setMaxSignaturesCount from './setMaxSignaturesCount';
+import disableMbVisibility from './disableMbVisibility';
+import enableMbVisibility from './enableMbVisibility';
 
 export default store => {
   window.readerControl = {

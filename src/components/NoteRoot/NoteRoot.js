@@ -13,8 +13,6 @@ import selectors from 'selectors';
 
 import './NoteRoot.scss';
 
-import MbAnnotationVisibilityButton from 'components/MbAnnotationVisibilityButton';
-
 class NoteRoot extends React.Component {
   static propTypes = {
     annotation: PropTypes.object.isRequired,
@@ -61,8 +59,8 @@ class NoteRoot extends React.Component {
       <div className="title">
         <div className="type">
           {icon
-          ? <Icon className="icon" glyph={icon} color={color} />
-          : annotation.Subject
+            ? <Icon className="icon" glyph={icon} color={color} />
+            : annotation.Subject
           }
         </div>
         {renderAuthorName(annotation)}
@@ -77,7 +75,6 @@ class NoteRoot extends React.Component {
             ` (${numberOfReplies})`
           }
         </div>
-        <MbAnnotationVisibilityButton annotation={annotation} />
         <NotePopup 
           annotation={annotation} 
           isNoteExpanded={isNoteExpanded} 
@@ -91,7 +88,7 @@ class NoteRoot extends React.Component {
   render() {
     const { annotation, renderContents, isEditing, closeEditing, searchInput, contents } = this.props;
 
-    return(
+    return (
       <div className="NoteRoot">
         {this.renderHeader()}
         <NoteContents 

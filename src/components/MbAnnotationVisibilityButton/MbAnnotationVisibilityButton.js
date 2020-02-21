@@ -14,19 +14,19 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
   }
 
   getAnnotationVisibilityMount = () => {
-      const { annotation } = this.props;
+    const { annotation } = this.props;
 
-      return (update) => {
-        this.setState({
-          update: update
-        });
+    return update => {
+      this.setState({
+        update
+      });
 
-        if (annotation.mbVisibility == 'public') {
-            return 'StatePublic';
-        } else {
-            return 'StatePrivate';
-        }
+      if (annotation.mbVisibility === 'public') {
+        return 'StatePublic';
+      } else {
+        return 'StatePrivate';
       }
+    };
   }
 
   componentDidMount() {
@@ -42,7 +42,7 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
 
     if (this.state) {
       const { update } = this.state;
-      if (annotation.mbVisibility == 'public') {
+      if (annotation.mbVisibility === 'public') {
         update('StatePublic');
       } else {
         update('StatePrivate');
@@ -51,11 +51,11 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
   }
 
   onAnnotationVisibilityChanged = e => {
-    const {annotation} = this.props;
-    const {update} = this.state;
+    const { annotation } = this.props;
+    const { update } = this.state;
     
-    if (e.detail.activeState.annotation.Id == annotation.Id) {
-      if (annotation.mbVisibility == 'public') {
+    if (e.detail.activeState.annotation.Id === annotation.Id) {
+      if (annotation.mbVisibility === 'public') {
         update('StatePublic');
       } else {
         update('StatePrivate');
@@ -67,27 +67,27 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
     const { annotation } = this.props;
 
     return {
-        StatePrivate: {
-          onClick: (update, activeState) => {
-            annotation.mbVisibility = 'public';
-            update('StatePublic');
-            FireEvent('annotationVisibilityChanged', {'activeState': activeState});
-          },
-          title: 'Visible to My Firm only',
-          img: 'mb_padlock',
-          annotation: annotation
+      StatePrivate: {
+        onClick: (update, activeState) => {
+          annotation.mbVisibility = 'public';
+          update('StatePublic');
+          FireEvent('annotationVisibilityChanged', { activeState });
         },
-        StatePublic: {
-          onClick: (update, activeState) => {
-            annotation.mbVisibility = 'private';
-            FireEvent('annotationVisibilityChanged', {'activeState': activeState});
-            update('StatePrivate');
+        title: 'Visible to My Firm only',
+        img: 'mb_padlock',
+        annotation
+      },
+      StatePublic: {
+        onClick: (update, activeState) => {
+          annotation.mbVisibility = 'private';
+          FireEvent('annotationVisibilityChanged', { activeState });
+          update('StatePrivate');
         },
         title: 'Visible to Everyone',
         img: 'mb_multiple_user',
-        annotation: annotation
+        annotation
       }
-    }
+    };
   }
 
   render() {
@@ -106,7 +106,6 @@ class MbAnnotationVisibilityButton extends React.PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-  className: 'MbAnnotationVisibilityButton',
   isDisabled: selectors.isElementDisabled(state, ownProps.dataElement)
 });
 

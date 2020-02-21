@@ -302,7 +302,7 @@ class AnnotationPopup extends React.PureComponent {
               onClick={this.ungroupAnnotations}
             />
           )}
-          <MbAnnotationVisibilityButton annotation={this.state.annotation} />
+          <MbAnnotationVisibilityButton annotation={firstAnnotation} />
         </>
         )}
       </div>

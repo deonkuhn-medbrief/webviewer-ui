@@ -24,7 +24,7 @@ import escapeHtml from 'helpers/escapeHtml';
 import useDidUpdate from 'hooks/useDidUpdate';
 import actions from 'actions';
 import selectors from 'selectors';
-
+import MbAnnotationVisibilityButton from 'components/MbAnnotationVisibilityButton';
 import './NoteContent.scss';
 
 const propTypes = {
@@ -161,6 +161,7 @@ const NoteContent = ({ annotation }) => {
           <span className="time">
             {` ${dayjs(annotation.DateCreated).format(noteDateFormat)}`}
           </span>
+          <MbAnnotationVisibilityButton annotation={annotation} />
           {isSelected && (
             <NotePopup annotation={annotation} setIsEditing={setIsEditing} />
           )}
@@ -186,6 +187,7 @@ const NoteContent = ({ annotation }) => {
             dayjs(annotation.DateCreated || new Date()).format(noteDateFormat)}
           {numberOfReplies > 0 && ` (${numberOfReplies})`}
         </div>
+        <MbAnnotationVisibilityButton annotation={annotation} />
         {isSelected && (
           <NotePopup annotation={annotation} setIsEditing={setIsEditing} />
         )}
